@@ -1,6 +1,6 @@
-# location_example
+# example
 
-Demonstrates how to use the location plugin.
+A new Flutter project.
 
 ## Getting Started
 

@@ -1,4 +1,4 @@
-package com.lyokone.locationexample;
+package com.yourcompany.example;
 
 import android.os.Bundle;
 

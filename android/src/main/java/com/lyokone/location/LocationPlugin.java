@@ -162,6 +162,7 @@ public class LocationPlugin implements MethodCallHandler, StreamHandler {
         mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
+
                 if (location != null) {
                     HashMap<String, Double> loc = new HashMap<String, Double>();
                     loc.put("latitude", location.getLatitude());
@@ -175,6 +176,7 @@ public class LocationPlugin implements MethodCallHandler, StreamHandler {
                     events.success(loc);
                 } else {
                     if (result != null) {
+                      Log.i(METHOD_CHANNEL_NAME, "LocationPlugin: Unable to get location!");
                         result.error("ERROR", "Failed to get location.", null);
                         return;
                     }
