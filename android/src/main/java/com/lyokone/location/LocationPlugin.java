@@ -86,7 +86,7 @@ public class LocationPlugin implements  MethodCallHandler, StreamHandler, Activi
 
     @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-        System.out.println("############################################## GOT A RESULT MOTHERFUCKER");
+        System.out.println("############################################## GOT A RESULT");
         result.success("NICE");
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
