@@ -93,7 +93,7 @@ public class LocationPluginActivity extends AppCompatActivity
 
     private void finishWithResult(HashMap<String, Double> location) {
         Intent resultIntent = new Intent();
-        //resultIntent.putExtra("location", location);
+        resultIntent.putExtra("location", location);
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }

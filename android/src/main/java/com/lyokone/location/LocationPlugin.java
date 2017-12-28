@@ -63,7 +63,7 @@ public class LocationPlugin implements  MethodCallHandler, StreamHandler, Activi
     public void onMethodCall(MethodCall call, final Result result) {
         this.result = result;
         if (call.method.equals("getLocation")) {
-            Intent locationActivity = new Intent(this, LocationPluginActivity.class);
+            Intent locationActivity = new Intent(activity, LocationPluginActivity.class);
             activity.startActivityForResult(locationActivity, REQUEST_PERMISSIONS_REQUEST_CODE);
         } else {
             result.notImplemented();
@@ -86,8 +86,7 @@ public class LocationPlugin implements  MethodCallHandler, StreamHandler, Activi
 
     @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-        System.out.println("############################################## GOT A RESULT");
-        result.success("NICE");
+        System.out.println("############################################## GOT A RESULT " + requestCode + " " + resultCode + " " + data);
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 System.out.println("RESULTU IASDASDASDASD");
