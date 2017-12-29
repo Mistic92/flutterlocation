@@ -2,31 +2,25 @@ package com.lyokone.location;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.IntentSender;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.os.Bundle;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.*;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
-
 
 import java.util.HashMap;
 
@@ -34,7 +28,7 @@ import java.util.HashMap;
  * LocationPlugin
  */
 public class LocationPluginActivity extends AppCompatActivity
-        implements  StreamHandler, ActivityCompat.OnRequestPermissionsResultCallback  {
+        implements StreamHandler, ActivityCompat.OnRequestPermissionsResultCallback {
     private static final String STREAM_CHANNEL_NAME = "lyokone/locationstream";
     private static final String METHOD_CHANNEL_NAME = "lyokone/location";
 
@@ -54,7 +48,6 @@ public class LocationPluginActivity extends AppCompatActivity
     private Result result;
 
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,9 +59,9 @@ public class LocationPluginActivity extends AppCompatActivity
         buildLocationSettingsRequest();
         if (!checkPermissions()) {
             requestPermissions();
-            return;
+        } else {
+            getLastLocation();
         }
-        getLastLocation();
         return;
     }
 
@@ -95,6 +88,14 @@ public class LocationPluginActivity extends AppCompatActivity
         Intent resultIntent = new Intent();
         resultIntent.putExtra("location", location);
         setResult(Activity.RESULT_OK, resultIntent);
+        finish();
+    }
+
+    private void finishWithError(String errorCode, String errorMsg) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("errorCode", errorCode);
+        resultIntent.putExtra("errorMsg", errorMsg);
+        setResult(Activity.RESULT_CANCELED, resultIntent);
         finish();
     }
 
@@ -166,23 +167,34 @@ public class LocationPluginActivity extends AppCompatActivity
                     loc.put("altitude", location.getAltitude());
                     finishWithResult(loc);
                 } else {
-                    // TODO: SEND "Location not active" error
-                    if (result != null) {
-                        Log.i(METHOD_CHANNEL_NAME, "LocationPlugin: Unable to get location!");
-                        result.error("ERROR", "Failed to get location.", null);
-                        return;
-                    }
-                    // Do not send error on events otherwise it will produce an error
+                    finishWithError("INTERNAL_LOCATION_ERROR"
+                            , "Could not get the location from the platform." +
+                                    " This can happen, if the location permission is granted, but the location service is not active.");
                 }
                 return;
             }
         });
     }
 
-    public void onRequestPermissionsResult(int requestCode, String[]permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        // TODO: IMPLEMENT PROPER HANDLING OF PERMISSION-REQUEST RESULTS
-        getLastLocation();
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        // check if request code matches the requested one
+        if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
+            // Check if the only required permission has been granted
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // location permission has been granted
+                System.out.println("Location permission has been granted. Getting location.");
+                getLastLocation();
+            } else {
+                System.out.println("Location Plugin: Location permission was NOT granted.");
+                finishWithError("PERMISSION_NOT_GRANTED", "The location permission was not granted " +
+                        "by the user. Re-Trigger the request again to re-trigger the permission prompt.");
+            }
+        } else {
+            System.out.println("Didn't get the proper permission to access the location.");
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
 
@@ -191,9 +203,8 @@ public class LocationPluginActivity extends AppCompatActivity
         events = eventsSink;
         if (!checkPermissions()) {
             requestPermissions();
-            return;
         }
-        getLastLocation();
+        // TODO: move code below into onRequestPermissionsResult if necessary
         /**
          * Requests location updates from the FusedLocationApi. Note: we don't call this unless location
          * runtime permission has been granted.

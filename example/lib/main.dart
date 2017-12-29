@@ -5,7 +5,7 @@ import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() {
-  runApp(new MyApp());
+  runApp(new MaterialApp(home: new MyApp()));
 }
 
 class MyApp extends StatefulWidget {
@@ -39,15 +39,35 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+
+  Future _displayAlertDialog(String errorCode, String errorMessage) async {
+    return showDialog(
+      context: context,
+      child: new AlertDialog(
+        title: new Text(errorCode),
+        content: new Text(errorMessage),
+        actions: <Widget>[
+          new FlatButton(
+            child: new Text('Ok'),
+            onPressed: ()  {Navigator.of(context).pop();},
+          ),
+        ],
+      ),
+    );
+  }
+
+
   // Platform messages are asynchronous, so we initialize in an async method.
-  updateLocation() async {
+  Future updateLocation() async {
     Map<String, double> location;
     // Platform messages may fail, so we use a try/catch PlatformException.
 
     try {
       location = await _location.getLocation;
-    } on PlatformException {
+    } on PlatformException catch(p) {
       location = null;
+      setState(() {});
+      await _displayAlertDialog(p.code, p.message);
     } catch (e) {
       print('Error retrieving Location:\n$e');
     }
@@ -67,13 +87,14 @@ class _MyAppState extends State<MyApp> {
     return new Image.network(path);
   }
 
-  void _openMap() {
+  void _openMap() async{
     if (_currentLocation != null) {
       launch(
           'https://www.google.com/maps/@?api=1&map_action=map&query='
           '${_currentLocation['longitude']},${_currentLocation['latitude']}');
     } else {
       print('ERROR: Could not open maps, since there is no location');
+      await _displayAlertDialog("No Location set", "No location set yet. Please press 'Update Location'");
     }
   }
 

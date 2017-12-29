@@ -38,7 +38,7 @@ public class LocationPlugin implements  MethodCallHandler, StreamHandler, Activi
     private EventSink events;
     private final Activity activity;
     private Result result;
-
+    private static LocationPlugin locationPlugin;
     LocationPlugin(Activity activity) {
         this.activity = activity;
     }
@@ -49,13 +49,12 @@ public class LocationPlugin implements  MethodCallHandler, StreamHandler, Activi
      */
     public static void registerWith(PluginRegistry.Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), METHOD_CHANNEL_NAME);
-        LocationPlugin locationPlugin = new LocationPlugin(registrar.activity());
+        locationPlugin = new LocationPlugin(registrar.activity());
         registrar.addActivityResultListener(locationPlugin);
         channel.setMethodCallHandler(locationPlugin);
 
-        // TODO: REACTIVATE TO ENABLE STREAMS AGAIN
-        // final EventChannel eventChannel = new EventChannel(registrar.messenger(), STREAM_CHANNEL_NAME);
-        // eventChannel.setStreamHandler(locationPlugin);
+        final EventChannel eventChannel = new EventChannel(registrar.messenger(), STREAM_CHANNEL_NAME);
+        eventChannel.setStreamHandler(locationPlugin);
     }
 
 
@@ -86,13 +85,14 @@ public class LocationPlugin implements  MethodCallHandler, StreamHandler, Activi
 
     @Override
     public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-        System.out.println("############################################## GOT A RESULT " + requestCode + " " + resultCode + " " + data);
         if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                System.out.println("RESULTU IASDASDASDASD");
+                HashMap<String, Double> location = (HashMap<String, Double>) data.getSerializableExtra("location");
+                result.success(location);
             }
             if (resultCode == Activity.RESULT_CANCELED) {
-                System.out.println("RESULTU NONONONONONONONON");
+                System.out.println("RESULT_CANCELED: Error getting location");
+                result.error(data.getStringExtra("errorCode"), data.getStringExtra("errorMsg"), null);
             }
         }
         return true;
