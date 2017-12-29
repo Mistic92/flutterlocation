@@ -66,7 +66,6 @@ class _MyAppState extends State<MyApp> {
       location = await _location.getLocation;
     } on PlatformException catch(p) {
       location = null;
-      setState(() {});
       await _displayAlertDialog(p.code, p.message);
     } catch (e) {
       print('Error retrieving Location:\n$e');
