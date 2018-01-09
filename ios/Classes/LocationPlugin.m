@@ -45,7 +45,13 @@
             }
 
             self.clLocationManager.desiredAccuracy = kCLLocationAccuracyBest;
+
             [self.clLocationManager startUpdatingLocation];
+        } else {
+            // User did not enable the location service
+            result([FlutterError errorWithCode:@"INTERNAL_LOCATION_ERROR"
+                                                   message:nil
+                                                   details:nil]);
         }
     }
     else {
@@ -77,6 +83,17 @@
         self.flutterEventSink(coordinatesDict);
     } else {
         [self.clLocationManager stopUpdatingLocation];
+    }
+}
+
+// Return an error, if user did not grant the app the necessary location-permission
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
+    // Since android does not make this distinction, we are handling both status the same.
+    if (status == kCLAuthorizationStatusDenied || status == kCLAuthorizationStatusRestricted) {
+        // User did not enable the location service
+        self.flutterResult([FlutterError errorWithCode:@"PERMISSION_NOT_GRANTED"
+                                   message:nil
+                                   details:nil]);
     }
 }
 
