@@ -61,16 +61,26 @@ class _MyAppState extends State<MyApp> {
   Future updateLocation() async {
     Map<String, double> location;
     // Platform messages may fail, so we use a try/catch PlatformException.
-
     try {
-      location = await _location.getLocation;
+       location = await _location.getLocation;
     } on PlatformException catch(p) {
+      // currently needed until this issue is closed:
+      // https://github.com/flutter/flutter/issues/13818
+      await new Future.delayed(const Duration(milliseconds: 100), () {});
+      var errorMsg;
+      if(p.code == 'INTERNAL_LOCATION_ERROR') {
+        errorMsg = 'User did not enable the location service';
+      } else if (p.code == 'PERMISSION_NOT_GRANTED'){
+        errorMsg = 'User did not grant camera-access';
+      } else {
+        errorMsg = 'Unknown error';
+      }
+
+      _displayAlertDialog(p.code, errorMsg);
       location = null;
-      await _displayAlertDialog(p.code, p.message);
     } catch (e) {
       print('Error retrieving Location:\n$e');
     }
-
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
@@ -86,7 +96,7 @@ class _MyAppState extends State<MyApp> {
     return new Image.network(path);
   }
 
-  void _openMap() async{
+  Future _openMap() async{
     if (_currentLocation != null) {
       launch(
           'https://www.google.com/maps/@?api=1&map_action=map&query='
