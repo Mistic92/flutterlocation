@@ -150,7 +150,7 @@ class _MyAppState extends State<MyApp> {
                       ),
                     ),
               new Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 60.0),
+                padding: const EdgeInsets.symmetric(horizontal: 30.0),
                 child: new Column(
                   children: [
                     _getLocationRow('longitude'),
