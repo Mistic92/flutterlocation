@@ -9,8 +9,8 @@ class Location {
   Stream<Map<String,double>> _onLocationChanged;
 
   Future<Map<String,double>> get getLocation async {
-    Map<String,double> map = await _channel.invokeMethod('getLocation');
-    return map;
+    Map map = (await _channel.invokeMethod('getLocation'));
+    return map.cast<String, double>();
   }
 
   Stream<Map<String,double>> get onLocationChanged {
