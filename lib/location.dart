@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/services.dart';
 
@@ -9,7 +10,7 @@ class Location {
   Stream<Map<String,double>> _onLocationChanged;
 
   Future<Map<String,double>> get getLocation async {
-    Map map = (await _channel.invokeMethod('getLocation'));
+    LinkedHashMap map = (await _channel.invokeMethod('getLocation'));
     return map.cast<String, double>();
   }
 
